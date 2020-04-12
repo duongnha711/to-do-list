@@ -8,6 +8,7 @@ import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
+import Tooltip from "@material-ui/core/Tooltip";
 
 import useStyles from "./styles";
 import {
@@ -21,20 +22,37 @@ import { viceTheme } from "../../../../theme";
 
 export default function TaskTable(props) {
   const classes = useStyles();
+  const { tasks, keyWord } = props;
 
   const renderTask = () => {
-    const tasks = JSON.parse(localStorage.getItem("listTask"));
-
-    if (tasks && tasks.length > 0) {
+    if (Array.isArray(tasks) && tasks.length > 0) {
       return tasks.map((task, index) => (
         <TableRow key={index}>
           <TableCell className={classes.item}>{index + 1}</TableCell>
           <TableCell className={classes.item}>{task.name}</TableCell>
           <TableCell align="center" className={classes.item}>
-            {task.status ? (
-              <Badge badgeContent={"Active"} color="primary" />
+            {task.status === "1" ? (
+              <Tooltip disableFocusListener title="Click to change status">
+                <Badge
+                  onClick={() => {
+                    handleChangeStatus(task.id);
+                  }}
+                  style={{ cursor: "pointer" }}
+                  badgeContent={"Active"}
+                  color="primary"
+                />
+              </Tooltip>
             ) : (
-              <Badge badgeContent={"Hidden"} color="secondary" />
+              <Tooltip disableFocusListener title="Click to change status">
+                <Badge
+                  onClick={() => {
+                    handleChangeStatus(task.id);
+                  }}
+                  style={{ cursor: "pointer" }}
+                  badgeContent={"Hidden"}
+                  color="secondary"
+                />
+              </Tooltip>
             )}
           </TableCell>
           <TableCell align="center" className={classes.item}>
@@ -42,12 +60,24 @@ export default function TaskTable(props) {
               style={{ marginRight: 10 }}
               variant="contained"
               color="secondary"
+              onClick={() => {
+                handleEditTask(task);
+              }}
             >
               <EditIcon fontSize="small" />
               Edit
             </Button>
             <MuiThemeProvider theme={viceTheme}>
-              <Button variant="contained" color="primary">
+              <Button
+                onClick={() => {
+                  if (
+                    window.confirm("Are you sure you want to delete this item?")
+                  )
+                    handleDelete(task.id);
+                }}
+                variant="contained"
+                color="primary"
+              >
                 <DeleteIcon fontSize="small" />
                 Delete
               </Button>
@@ -56,6 +86,28 @@ export default function TaskTable(props) {
         </TableRow>
       ));
     }
+  };
+
+  const handleDelete = (id) => {
+    props.handleDeteleTask(id);
+  };
+
+  const handleEditTask = (task) => {
+    props.handleEditTask(task);
+  };
+
+  const handleChangeStatus = (id) => {
+    props.handleChangeStatus(id);
+  };
+
+  const handleOnChange = (e) => {
+    const { value } = e.target;
+    props.handleSearch(value);
+  };
+
+  const handleSearchStatus = (e) => {
+    const { value } = e.target;
+    props.handleSearchStatus(value);
   };
 
   return (
@@ -91,14 +143,21 @@ export default function TaskTable(props) {
           <TableRow>
             <TableCell className={classes.item}></TableCell>
             <TableCell className={classes.item}>
-              <TextField variant="outlined" size="small" fullWidth />
+              <TextField
+                onChange={handleOnChange}
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={keyWord}
+              />
             </TableCell>
             <TableCell className={classes.item}>
               <FormControl fullWidth size="small">
-                <Select native variant="outlined">
+                <Select onChange={handleSearchStatus} native variant="outlined">
                   {/* render option */}
-                  <option value={true}>Active</option>
-                  <option value={false}>Hidden</option>
+                  <option value="all">All</option>
+                  <option value="1">Active</option>
+                  <option value="0">Hidden</option>
                 </Select>
               </FormControl>
             </TableCell>
