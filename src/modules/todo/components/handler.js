@@ -13,3 +13,17 @@ export const searchStatus = (arr, status) => {
     return item.status === status;
   });
 };
+
+export function sortTask(arr, by, value) {
+  return arr.sort((a, b) => {
+    const x = a[by].toLowerCase();
+    const y = b[by].toLowerCase();
+    if (x < y) {
+      return -value;
+    }
+    if (x > y) {
+      return value;
+    }
+    return 0;
+  });
+}
