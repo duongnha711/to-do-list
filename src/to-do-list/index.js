@@ -9,12 +9,16 @@ import {
 import TaskTable from "../modules/todo/components/table";
 import SearchBar from "../component/SearchBar";
 import TaskModal from "../modules/todo/components/TaskModal";
+import SortTask from "../modules/todo/components/SortTask";
 
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import randomstring from "randomstring";
 import { viceTheme } from "./../theme";
 import { findTasksIndex } from "../functions/helper";
-import { searchName, searchStatus } from "../modules/todo/components/handler";
+import {
+  searchName,
+  searchStatus,
+  sortTask,
+} from "../modules/todo/components/handler";
 
 export default function ToDoList() {
   // const classes = styles();
@@ -30,27 +34,31 @@ export default function ToDoList() {
   const [keyWord, setKeyWord] = useState("");
   const [status, setStatus] = useState("all");
   const [searchTasks, setSearchTasks] = useState([]);
-  const handleGenerateData = () => {
-    const listTask = [
-      {
-        name: "Learn ReactJS",
-        status: "0",
-        id: randomstring.generate(),
-      },
-      {
-        name: "Learn Redux",
-        status: "1",
-        id: randomstring.generate(),
-      },
-      {
-        name: "Learn Middleware",
-        status: "0",
-        id: randomstring.generate(),
-      },
-    ];
-    setTasks(listTask);
-    localStorage.setItem("listTask", JSON.stringify(listTask));
-  };
+
+  //sort
+  const [isSort, SetIsSort] = useState(false); // cái này chỉ để bỏ tick ở sort
+  // const handleGenerateData = () => {
+  //   const listTask = [
+  //     {
+  //       name: "Learn ReactJS",
+  //       status: "0",
+  //       id: randomstring.generate(),
+  //     },
+  //     {
+  //       name: "Train Redux",
+  //       status: "1",
+  //       id: randomstring.generate(),
+  //     },
+  //     {
+  //       name: "Research Middleware",
+  //       status: "0",
+  //       id: randomstring.generate(),
+  //     },
+  //   ];
+  //   setTasks(listTask);
+  //   localStorage.setItem("listTask", JSON.stringify(listTask));
+  // };
+
   const handleDeteleLocal = () => {
     localStorage.removeItem("listTask");
     setTasks([]);
@@ -108,9 +116,13 @@ export default function ToDoList() {
 
   const handleSearch = (value) => {
     setKeyWord(value);
+    setStatus("all");
+    SetIsSort(false);
   };
   const handleSearchStatus = (value) => {
     setStatus(value);
+    setKeyWord("");
+    SetIsSort(false);
   };
 
   //search theo name
@@ -128,6 +140,13 @@ export default function ToDoList() {
       setSearchTasks([...tasks]);
     }
   }, [status, tasks]);
+
+  const handleSort = (sort) => {
+    const { by, value } = sort;
+    const newArrSort = sortTask([...searchTasks], by, value);
+    setSearchTasks(newArrSort);
+    SetIsSort(true);
+  };
 
   return (
     <Container maxWidth="lg">
@@ -149,19 +168,17 @@ export default function ToDoList() {
       <SearchBar keyWord={keyWord} handleSearch={handleSearch} />
 
       {/* Sort */}
-      <Button style={{ marginLeft: 20 }} variant="contained" color="primary">
-        <ArrowDropDownIcon fontSize="small" /> Sort
-      </Button>
+      <SortTask isSort={isSort} handleSort={handleSort} />
 
       {/* Generate Data */}
-      <Button
+      {/* <Button
         onClick={handleGenerateData}
         style={{ marginLeft: 20 }}
         variant="contained"
         color="primary"
       >
         Generate Data
-      </Button>
+      </Button> */}
 
       {/* Clear All */}
       <MuiThemeProvider theme={viceTheme}>
@@ -189,6 +206,7 @@ export default function ToDoList() {
         tasks={searchTasks}
         handleEditTask={handleEditTask}
         keyWord={keyWord} // để trùng 2 thằng keyWord
+        status={status}
       />
     </Container>
   );
